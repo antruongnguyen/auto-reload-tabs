@@ -9,13 +9,14 @@ function isExtensionContextValid() {
 }
 
 // Check for reload status on page load
+const TAB_MARKER = "⚡ ";
 chrome.runtime.sendMessage({ action: "getCurrentTabId" }, (response) => {
   if (response && response.tabId) {
     chrome.storage.local.get(`tab_${response.tabId}`, (result) => {
       const tabData = result[`tab_${response.tabId}`];
-      if (tabData && tabData.active && !document.title.startsWith("🔄 ")) {
+      if (tabData && tabData.active && !document.title.startsWith(TAB_MARKER)) {
         originalTitle = document.title;
-        document.title = "🔄 " + document.title;
+        document.title = TAB_MARKER + document.title;
       }
     });
   }
@@ -28,12 +29,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     sendResponse({ tabId: chrome.runtime.getURL("") });
   } else if (request.action === "updateTabTitle") {
     if (request.active) {
-      if (!document.title.startsWith("🔄 ")) {
+      if (!document.title.startsWith(TAB_MARKER)) {
         originalTitle = document.title;
-        document.title = "🔄 " + document.title;
+        document.title = TAB_MARKER + document.title;
       }
     } else {
-      if (document.title.startsWith("🔄 ")) {
+      if (document.title.startsWith(TAB_MARKER)) {
         document.title = originalTitle;
       }
     }

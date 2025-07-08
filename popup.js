@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const actionBtn = document.getElementById('actionBtn');
-  const statusText = document.getElementById('statusText');
   const countdownEl = document.getElementById('countdown');
   const hoursInput = document.getElementById('hours');
   const minutesInput = document.getElementById('minutes');
@@ -43,12 +42,14 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
           return;
         }
-        
+
+        countdownEl.hidden = !(response && response.active);
         if (response && response.active && response.timeRemaining > 0) {
           countdownEl.textContent = formatTime(response.timeRemaining);
         } else if (response && response.active) {
           countdownEl.textContent = "Reloading...";
         } else {
+          countdownEl.hidden = true;
           countdownEl.textContent = "";
         }
       });
@@ -73,8 +74,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         if (response && response.active) {
-          statusText.textContent = "Active";
-          statusText.className = "active-status";
           actionBtn.textContent = "Stop Auto Reload";
           actionBtn.className = "action-button stop-btn";
           
@@ -91,10 +90,9 @@ document.addEventListener('DOMContentLoaded', async () => {
           countdownInterval = setInterval(updateCountdown, 1000);
           updateCountdown();
         } else {
-          statusText.textContent = "Inactive";
-          statusText.className = "inactive-status";
           actionBtn.textContent = "Start Auto Reload";
           actionBtn.className = "action-button start-btn";
+          countdownEl.hidden = true;
           countdownEl.textContent = "";
           
           if (countdownInterval) {

@@ -5,9 +5,8 @@
   "description": "Automatically reload browser tabs with customizable intervals",
   "permissions": [
     "tabs",
-    "contextMenus",
-    "storage",
-    "activeTab"
+    "contextMenus", 
+    "storage"
   ],
   "background": {
     "service_worker": "background.js"

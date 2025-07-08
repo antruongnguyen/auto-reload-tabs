@@ -16,11 +16,6 @@
       text-align: center;
       margin-bottom: 15px;
     }
-    .status {
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
     .countdown {
       font-size: 20px;
       font-weight: bold;
@@ -96,20 +91,10 @@
     .preset-btn:hover {
       background-color: #e0e0e0;
     }
-    .active-status {
-      color: #4CAF50;
-    }
-    .inactive-status {
-      color: #666;
-    }
-    .hidden {
-      display: none;
-    }
   </style>
 </head>
 <body>
   <div class="status-section">
-    <div class="status">Status: <span id="statusText">Inactive</span></div>
     <div class="countdown" id="countdown"></div>
     <button id="actionBtn" class="action-button start-btn">Start Auto Reload</button>
   </div>

@@ -102,11 +102,11 @@ function updateBadge(tabId, active) {
   chrome.tabs.get(tabId).then(() => {
     chrome.action.setBadgeText({
       tabId: tabId,
-      text: active ? "▶" : ""
+      text: active ? "⚡" : ""
     });
     chrome.action.setBadgeBackgroundColor({
       tabId: tabId,
-      color: active ? "#FF6347" : "#FF5722"
+      color: "#444444"
     });
     
     // Update tab title to show reload status
