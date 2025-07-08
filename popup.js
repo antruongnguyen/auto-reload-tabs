@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const minutesInput = document.getElementById('minutes');
   const secondsInput = document.getElementById('seconds');
   const presetButtons = document.querySelectorAll('.preset-btn');
+  const intervalSection = document.getElementById('intervalSection');
+  const timeLabels = document.querySelectorAll('.time-label');
 
   let currentTabId;
   let countdownInterval;
@@ -46,11 +48,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         countdownEl.hidden = !(response && response.active);
         if (response && response.active && response.timeRemaining > 0) {
           countdownEl.textContent = formatTime(response.timeRemaining);
+          countdownEl.classList.add('active');
         } else if (response && response.active) {
           countdownEl.textContent = "Reloading...";
+          countdownEl.classList.add('active');
         } else {
           countdownEl.hidden = true;
           countdownEl.textContent = "";
+          countdownEl.classList.remove('active');
         }
       });
     } catch (error) {
@@ -86,6 +91,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           minutesInput.value = minutes;
           secondsInput.value = seconds;
           
+          // Lock interval controls
+          lockIntervalControls(true);
+          
+          // Update preset button active state
+          updatePresetButtonState(response.interval / 1000);
+          
           if (countdownInterval) clearInterval(countdownInterval);
           countdownInterval = setInterval(updateCountdown, 1000);
           updateCountdown();
@@ -94,6 +105,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           actionBtn.className = "action-button start-btn";
           countdownEl.hidden = true;
           countdownEl.textContent = "";
+          countdownEl.classList.remove('active');
+          
+          // Unlock interval controls
+          lockIntervalControls(false);
+          
+          // Clear preset button active state
+          presetButtons.forEach(btn => btn.classList.remove('active'));
           
           if (countdownInterval) {
             clearInterval(countdownInterval);
@@ -163,10 +181,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  function lockIntervalControls(locked) {
+    intervalSection.classList.toggle('locked', locked);
+    
+    // Lock/unlock input fields
+    hoursInput.disabled = locked;
+    minutesInput.disabled = locked;
+    secondsInput.disabled = locked;
+    
+    // Lock/unlock preset buttons
+    presetButtons.forEach(btn => {
+      btn.disabled = locked;
+    });
+    
+    // Update time labels appearance
+    timeLabels.forEach(label => {
+      label.classList.toggle('disabled', locked);
+    });
+  }
+
+  function updatePresetButtonState(currentSeconds) {
+    presetButtons.forEach(btn => {
+      const btnSeconds = parseInt(btn.dataset.seconds);
+      if (btnSeconds === currentSeconds) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+
   presetButtons.forEach(button => {
     button.addEventListener('click', () => {
       const seconds = parseInt(button.dataset.seconds);
       setIntervalFromSeconds(seconds);
+      updatePresetButtonState(seconds);
     });
   });
 

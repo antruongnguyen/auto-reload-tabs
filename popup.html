@@ -3,121 +3,277 @@
 <head>
   <meta charset="utf-8">
   <style>
-    body {
-      width: 280px;
-      padding: 15px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 8px;
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-    .status-section {
+    
+    body {
+      width: 320px;
+      min-height: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: #333;
+      overflow: hidden;
+    }
+    
+    .container {
+      padding: 24px;
+      height: 100%;
+    }
+    
+    .header {
       text-align: center;
-      margin-bottom: 15px;
+      margin-bottom: 24px;
     }
+    
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 4px;
+    }
+    
+    .subtitle {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .status-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
     .countdown {
-      font-size: 20px;
-      font-weight: bold;
-      color: #4CAF50;
-      margin-bottom: 10px;
-      min-height: 24px;
+      font-size: 24px;
+      font-weight: 700;
+      color: #10b981;
+      text-align: center;
+      margin-bottom: 16px;
+      min-height: 32px;
+      font-feature-settings: 'tnum';
+      letter-spacing: 0.5px;
     }
+    
     .action-button {
       width: 100%;
-      padding: 12px;
+      padding: 14px;
       border: none;
-      border-radius: 6px;
+      border-radius: 12px;
       cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      transition: all 0.2s;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
+    
+    .action-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .action-button:hover::before {
+      left: 100%;
+    }
+    
     .start-btn {
-      background-color: #4CAF50;
+      background: linear-gradient(135deg, #10b981, #059669);
       color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
+    
     .start-btn:hover {
-      background-color: #45a049;
+      background: linear-gradient(135deg, #059669, #047857);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
     }
+    
     .stop-btn {
-      background-color: #f44336;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
+    
     .stop-btn:hover {
-      background-color: #da190b;
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
     }
+    
     .interval-section {
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: all 0.3s ease;
     }
+    
+    .interval-section.locked {
+      background: rgba(241, 245, 249, 0.95);
+      border: 1px solid rgba(203, 213, 225, 0.5);
+    }
+    
     .interval-label {
-      font-size: 12px;
-      color: #666;
-      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      text-align: center;
     }
+    
     .interval-inputs {
       display: flex;
-      gap: 8px;
+      gap: 12px;
       align-items: center;
       justify-content: center;
-      margin-bottom: 10px;
+      margin-bottom: 16px;
     }
-    input[type="number"] {
-      width: 45px;
-      padding: 6px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 12px;
-    }
-    .preset-buttons {
+    
+    .time-input-group {
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: center;
       gap: 4px;
-      justify-content: center;
     }
+    
+    .time-input {
+      width: 50px;
+      height: 40px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: #334155;
+      background: white;
+      transition: all 0.3s ease;
+    }
+    
+    .time-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    .time-input:disabled {
+      background: #f8fafc;
+      color: #94a3b8;
+      border-color: #e2e8f0;
+      cursor: not-allowed;
+    }
+    
+    .time-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .time-label.disabled {
+      color: #94a3b8;
+    }
+    
+    .preset-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    
     .preset-btn {
-      background-color: #f5f5f5;
-      color: #333;
-      padding: 4px 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 11px;
+      background: white;
+      color: #475569;
+      padding: 8px 4px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
+      text-align: center;
     }
-    .preset-btn:hover {
-      background-color: #e0e0e0;
+    
+    .preset-btn:hover:not(:disabled) {
+      background: #6366f1;
+      color: white;
+      border-color: #6366f1;
+    }
+    
+    .preset-btn.active {
+      background: #10b981;
+      color: white;
+      border-color: #10b981;
+    }
+    
+    .preset-btn:disabled {
+      background: #f8fafc;
+      color: #94a3b8;
+      border-color: #e2e8f0;
+      cursor: not-allowed;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    
+    .countdown.active {
+      animation: pulse 2s infinite;
     }
   </style>
 </head>
 <body>
-  <div class="status-section">
-    <div class="countdown" id="countdown"></div>
-    <button id="actionBtn" class="action-button start-btn">Start Auto Reload</button>
-  </div>
-
-  <div class="interval-section">
-    <div class="interval-label">Set Timer Interval</div>
-    <div class="interval-inputs">
-      <input type="number" id="hours" min="0" max="23" value="0">
-      <span>h</span>
-      <input type="number" id="minutes" min="0" max="59" value="0">
-      <span>m</span>
-      <input type="number" id="seconds" min="1" max="59" value="30">
-      <span>s</span>
+  <div class="container">
+    <div class="header">
+      <div class="title">Auto Reload</div>
+      <div class="subtitle">Automatic tab refresh</div>
     </div>
     
-    <div class="preset-buttons">
-      <button class="preset-btn" data-seconds="10">10s</button>
-      <button class="preset-btn" data-seconds="30">30s</button>
-      <button class="preset-btn" data-seconds="60">1m</button>
-      <button class="preset-btn" data-seconds="300">5m</button>
-      <button class="preset-btn" data-seconds="600">10m</button>
-      <button class="preset-btn" data-seconds="1800">30m</button>
-      <button class="preset-btn" data-seconds="3600">1h</button>
+    <div class="status-card">
+      <div class="countdown" id="countdown"></div>
+      <button id="actionBtn" class="action-button start-btn">Start Auto Reload</button>
+    </div>
+
+    <div class="interval-section" id="intervalSection">
+      <div class="interval-label">Timer Interval</div>
+      <div class="interval-inputs">
+        <div class="time-input-group">
+          <input type="number" id="hours" min="0" max="23" value="0" class="time-input">
+          <span class="time-label">hours</span>
+        </div>
+        <div class="time-input-group">
+          <input type="number" id="minutes" min="0" max="59" value="0" class="time-input">
+          <span class="time-label">minutes</span>
+        </div>
+        <div class="time-input-group">
+          <input type="number" id="seconds" min="1" max="59" value="30" class="time-input">
+          <span class="time-label">seconds</span>
+        </div>
+      </div>
+      
+      <div class="preset-buttons" id="presetButtons">
+        <button class="preset-btn" data-seconds="10">10s</button>
+        <button class="preset-btn" data-seconds="30">30s</button>
+        <button class="preset-btn" data-seconds="60">1m</button>
+        <button class="preset-btn" data-seconds="300">5m</button>
+        <button class="preset-btn" data-seconds="600">10m</button>
+        <button class="preset-btn" data-seconds="1800">30m</button>
+        <button class="preset-btn" data-seconds="3600">1h</button>
+        <button class="preset-btn" data-seconds="7200">2h</button>
+      </div>
     </div>
   </div>
 
