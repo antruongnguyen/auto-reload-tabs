@@ -40,38 +40,67 @@
       color: rgba(255, 255, 255, 0.8);
     }
     
-    .status-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(20px);
-      border-radius: 16px;
-      padding: 20px;
+    .control-section {
       margin-bottom: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      position: relative;
+    }
+    
+    .countdown-display {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      text-align: center;
+      min-height: 60px;
+      flex-direction: column;
+      justify-content: center;
+      transition: all 0.3s ease;
+      display: none;
+    }
+    
+    .countdown-display.show {
+      display: flex;
+    }
+    
+    .timer-status {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     
     .countdown {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 700;
-      color: #10b981;
-      text-align: center;
-      margin-bottom: 16px;
-      min-height: 32px;
+      color: white;
       font-feature-settings: 'tnum';
       letter-spacing: 0.5px;
     }
     
+    .button-group {
+      display: flex;
+      gap: 8px;
+      position: relative;
+    }
+    
     .action-button {
-      width: 100%;
-      padding: 14px;
-      border: none;
+      flex: 1;
+      padding: 14px 16px;
       border-radius: 12px;
       cursor: pointer;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #475569;
     }
     
     .action-button::before {
@@ -93,6 +122,7 @@
       background: linear-gradient(135deg, #10b981, #059669);
       color: white;
       box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      border: 1px solid rgba(16, 185, 129, 0.2);
     }
     
     .start-btn:hover {
@@ -104,11 +134,88 @@
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white;
       box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      border: 1px solid rgba(239, 68, 68, 0.2);
     }
     
     .stop-btn:hover {
       background: linear-gradient(135deg, #dc2626, #b91c1c);
       box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+    }
+    
+    .dropdown-button {
+      width: 44px;
+      padding: 14px 8px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      position: relative;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #475569;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .dropdown-button:hover {
+      background: rgba(255, 255, 255, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      min-width: 180px;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition: all 0.3s ease;
+    }
+    
+    .dropdown-menu.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    
+    .dropdown-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #475569;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      transition: all 0.2s ease;
+      border-radius: 8px;
+      margin: 4px;
+      width: calc(100% - 8px);
+    }
+    
+    .dropdown-item:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+    }
+    
+    .dropdown-item:first-child {
+      margin-top: 8px;
+    }
+    
+    .dropdown-item:last-child {
+      margin-bottom: 8px;
     }
     
     .interval-section {
@@ -242,9 +349,18 @@
       <div class="subtitle">Automatic tab refresh</div>
     </div>
     
-    <div class="status-card">
-      <div class="countdown" id="countdown"></div>
-      <button id="actionBtn" class="action-button start-btn">Start Auto Reload</button>
+    <div class="control-section">
+      <div class="countdown-display" id="countdownDisplay">
+        <div class="timer-status" id="timerStatus">Timer Status</div>
+        <div class="countdown" id="countdown">Ready to start</div>
+      </div>
+      <div class="button-group">
+        <button id="actionBtn" class="action-button start-btn">▶ Start Timer</button>
+        <button id="dropdownBtn" class="dropdown-button">⋯</button>
+        <div class="dropdown-menu" id="dropdownMenu">
+          <button class="dropdown-item" id="stopAllBtn">Stop All Timers</button>
+        </div>
+      </div>
     </div>
 
     <div class="interval-section" id="intervalSection">

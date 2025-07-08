@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const actionBtn = document.getElementById('actionBtn');
+  const dropdownBtn = document.getElementById('dropdownBtn');
+  const dropdownMenu = document.getElementById('dropdownMenu');
+  const stopAllBtn = document.getElementById('stopAllBtn');
+  const timerStatus = document.getElementById('timerStatus');
   const countdownEl = document.getElementById('countdown');
   const hoursInput = document.getElementById('hours');
   const minutesInput = document.getElementById('minutes');
@@ -45,17 +49,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           return;
         }
 
-        countdownEl.hidden = !(response && response.active);
         if (response && response.active && response.timeRemaining > 0) {
           countdownEl.textContent = formatTime(response.timeRemaining);
-          countdownEl.classList.add('active');
+          timerStatus.textContent = "Next reload in";
+          countdownDisplay.classList.add('show');
+          countdownDisplay.classList.add('active');
         } else if (response && response.active) {
           countdownEl.textContent = "Reloading...";
-          countdownEl.classList.add('active');
+          timerStatus.textContent = "Reloading now";
+          countdownDisplay.classList.add('show');
+          countdownDisplay.classList.add('active');
         } else {
-          countdownEl.hidden = true;
-          countdownEl.textContent = "";
-          countdownEl.classList.remove('active');
+          countdownDisplay.classList.remove('show');
+          countdownDisplay.classList.remove('active');
         }
       });
     } catch (error) {
@@ -79,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         if (response && response.active) {
-          actionBtn.textContent = "Stop Auto Reload";
+          actionBtn.textContent = "⏹ Stop Timer";
           actionBtn.className = "action-button stop-btn";
           
           const totalSeconds = response.interval / 1000;
@@ -91,6 +97,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           minutesInput.value = minutes;
           secondsInput.value = seconds;
           
+          // Show countdown display
+          countdownDisplay.classList.add('show');
+          countdownDisplay.classList.add('active');
+          
           // Lock interval controls
           lockIntervalControls(true);
           
@@ -101,12 +111,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           countdownInterval = setInterval(updateCountdown, 1000);
           updateCountdown();
         } else {
-          actionBtn.textContent = "Start Auto Reload";
+          actionBtn.textContent = "▶ Start Timer";
           actionBtn.className = "action-button start-btn";
-          countdownEl.hidden = true;
-          countdownEl.textContent = "";
-          countdownEl.classList.remove('active');
           
+          // Hide countdown display
+          countdownDisplay.classList.remove('show');
+          countdownDisplay.classList.remove('active');
+
           // Unlock interval controls
           lockIntervalControls(false);
           
@@ -210,6 +221,38 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   }
+
+  // Dropdown functionality
+  dropdownBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdownMenu.classList.toggle('show');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => {
+    dropdownMenu.classList.remove('show');
+  });
+
+  // Stop all timers functionality
+  stopAllBtn.addEventListener('click', async () => {
+    try {
+      dropdownMenu.classList.remove('show');
+      
+      // Get all tabs and stop their timers
+      const tabs = await chrome.tabs.query({});
+      const promises = tabs.map(tab => 
+        chrome.runtime.sendMessage({
+          action: "stopAutoReload",
+          tabId: tab.id
+        }).catch(() => {}) // Ignore errors for tabs without timers
+      );
+      
+      await Promise.all(promises);
+      updateStatus(); // Refresh current tab status
+    } catch (error) {
+      console.debug('Extension context invalidated during stop all');
+    }
+  });
 
   presetButtons.forEach(button => {
     button.addEventListener('click', () => {
