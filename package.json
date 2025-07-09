@@ -1,0 +1,44 @@
+{
+  "name": "auto-reload-tabs",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Automatically reload browser tabs with customizable intervals",
+  "main": "dist/manifest.json",
+  "scripts": {
+    "dev": "vite build --mode development --watch",
+    "build": "vite build",
+    "build:prod": "vite build --mode production",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .js,.ts --fix",
+    "format": "prettier --write src/**/*.{js,html}",
+    "clean": "rimraf dist",
+    "package": "npm run build:prod && web-ext build --source-dir=dist --artifacts-dir=web-ext-artifacts"
+  },
+  "keywords": [
+    "chrome-extension",
+    "auto-reload",
+    "tabs",
+    "browser",
+    "productivity"
+  ],
+  "author": "Auto Reload Extension Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.21",
+    "@types/chrome": "^0.0.268",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3",
+    "vite": "^6.3.5",
+    "web-ext": "^8.8.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/antruongnguyen/auto-reload-tabs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/antruongnguyen/auto-reload-tabs/issues"
+  },
+  "homepage": "https://github.com/antruongnguyen/auto-reload-tabs#readme"
+}

@@ -1,3 +1,8 @@
+/**
+ * Content script for tab title management
+ */
+
+const TAB_MARKER = '⚡ ';
 let originalTitle = document.title;
 
 function isExtensionContextValid() {
@@ -9,8 +14,7 @@ function isExtensionContextValid() {
 }
 
 // Check for reload status on page load
-const TAB_MARKER = "⚡ ";
-chrome.runtime.sendMessage({ action: "getCurrentTabId" }, (response) => {
+chrome.runtime.sendMessage({ action: 'getCurrentTabId' }, (response) => {
   if (response && response.tabId) {
     chrome.storage.local.get(`tab_${response.tabId}`, (result) => {
       const tabData = result[`tab_${response.tabId}`];
@@ -24,10 +28,8 @@ chrome.runtime.sendMessage({ action: "getCurrentTabId" }, (response) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (!isExtensionContextValid()) return;
-  
-  if (request.action === "getTabId") {
-    sendResponse({ tabId: chrome.runtime.getURL("") });
-  } else if (request.action === "updateTabTitle") {
+
+  if (request.action === 'updateTabTitle') {
     if (request.active) {
       if (!document.title.startsWith(TAB_MARKER)) {
         originalTitle = document.title;
@@ -44,12 +46,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 document.addEventListener('contextmenu', (e) => {
   if (!isExtensionContextValid()) return;
-  
+
   try {
     chrome.runtime.sendMessage({
-      action: "contextMenu",
+      action: 'contextMenu',
       pageX: e.pageX,
-      pageY: e.pageY
+      pageY: e.pageY,
     });
   } catch (error) {
     console.debug('Extension context invalidated, ignoring contextmenu event');

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Auto Reload Tabs",
-  "version": "1.0",
+  "version": "1.0.0",
   "description": "Automatically reload browser tabs with customizable intervals",
   "permissions": [
     "tabs",
@@ -9,21 +9,22 @@
     "storage"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "src/scripts/background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["content.js"]
+      "js": ["src/scripts/content.js"]
     }
   ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "src/popup/popup.html",
     "default_title": "Auto Reload Settings"
   },
   "icons": {
-    "16": "icon48.png",
-    "48": "icon128.png",
-    "128": "icon192.png"
+    "16": "src/icons/icon48.png",
+    "48": "src/icons/icon128.png", 
+    "128": "src/icons/icon192.png"
   }
 }
