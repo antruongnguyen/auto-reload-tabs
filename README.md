@@ -34,7 +34,7 @@ A modern Chrome extension that automatically reloads browser tabs with customiza
 
 ### Setup
 ```bash
-git clone https://github.com/your-username/auto-reload-tabs.git
+git clone https://github.com/antruongnguyen/auto-reload-tabs.git
 cd auto-reload-tabs
 npm install
 ```
@@ -142,8 +142,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/your-username/auto-reload-tabs/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/your-username/auto-reload-tabs/discussions)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/antruongnguyen/auto-reload-tabs/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/antruongnguyen/auto-reload-tabs/discussions)
 - 📧 **Contact**: Create an issue for general questions
 
 ---

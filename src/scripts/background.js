@@ -1,29 +1,37 @@
-import { TimerManager, BadgeManager, ContextMenuManager } from './utils.js';
+import { TimerManager, BadgeManager, ContextMenuManager, ServiceWorkerManager } from './utils.js';
 
-// Initialize context menus on installation
-chrome.runtime.onInstalled.addListener(() => {
+// Initialize context menus and recover timers on installation/startup
+chrome.runtime.onInstalled.addListener(async () => {
   ContextMenuManager.create();
+  await TimerManager.recoverTimers();
+  await ServiceWorkerManager.manageKeepAlive();
+});
+
+// Also recover timers on service worker startup
+chrome.runtime.onStartup.addListener(async () => {
+  await TimerManager.recoverTimers();
+  await ServiceWorkerManager.manageKeepAlive();
 });
 
 // Update context menu on tab activation
 chrome.tabs.onActivated.addListener((activeInfo) => {
-  if (TimerManager.isActive(activeInfo.tabId)) {
-    ContextMenuManager.update(activeInfo.tabId);
-  }
+  ContextMenuManager.update(activeInfo.tabId);
 });
 
 // Handle context menu clicks
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   switch (info.menuItemId) {
     case 'start-auto-reload':
-      TimerManager.start(tab.id);
+      await TimerManager.start(tab.id);
       BadgeManager.update(tab.id, true);
       ContextMenuManager.update(tab.id);
+      await ServiceWorkerManager.manageKeepAlive();
       break;
     case 'stop-auto-reload':
-      TimerManager.stop(tab.id);
+      await TimerManager.stop(tab.id);
       BadgeManager.update(tab.id, false);
       ContextMenuManager.update(tab.id);
+      await ServiceWorkerManager.manageKeepAlive();
       break;
     case 'configure-auto-reload':
       chrome.action.openPopup();
@@ -32,23 +40,23 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 // Clean up when tabs are removed
-chrome.tabs.onRemoved.addListener((tabId) => {
-  TimerManager.stop(tabId);
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  await TimerManager.stop(tabId);
+  await ServiceWorkerManager.manageKeepAlive();
 });
 
 // Handle tab updates and restore timers
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _tab) => {
   if (TimerManager.isActive(tabId)) {
     if (changeInfo.status === 'complete') {
-      chrome.storage.local.get(`tab_${tabId}`, (result) => {
-        const tabData = result[`tab_${tabId}`];
-        if (tabData && tabData.active) {
-          TimerManager.start(tabId, tabData.interval);
-          setTimeout(() => {
-            BadgeManager.update(tabId, true);
-          }, 100);
-        }
-      });
+      const result = await chrome.storage.local.get(`tab_${tabId}`);
+      const tabData = result[`tab_${tabId}`];
+      if (tabData && tabData.active) {
+        await TimerManager.start(tabId, tabData.interval);
+        setTimeout(() => {
+          BadgeManager.update(tabId, true);
+        }, 100);
+      }
     }
 
     if (changeInfo.status === 'loading') {
@@ -60,41 +68,51 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, _tab) => {
 // Handle messages from popup and content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const tabId = request.tabId;
-  switch (request.action) {
-    case 'getCurrentTabId':
-      sendResponse({ tabId: sender.tab.id });
-      break;
+  
+  // Handle async operations
+  const handleAsync = async () => {
+    switch (request.action) {
+      case 'getCurrentTabId':
+        return { tabId: sender.tab.id };
 
-    case 'setReloadInterval':
-      if (TimerManager.isActive(tabId)) {
-        TimerManager.start(tabId, request.interval);
-      }
-      sendResponse({ success: true });
-      break;
+      case 'setReloadInterval':
+        if (TimerManager.isActive(tabId)) {
+          await TimerManager.start(tabId, request.interval);
+        }
+        return { success: true };
 
-    case 'getReloadStatus':
-      sendResponse({
-        active: TimerManager.isActive(tabId),
-        interval: TimerManager.getInterval(tabId),
-        timeRemaining: Math.ceil(TimerManager.getTimeRemaining(tabId)),
-      });
-      break;
+      case 'getReloadStatus':
+        return {
+          active: TimerManager.isActive(tabId),
+          interval: TimerManager.getInterval(tabId),
+          timeRemaining: Math.ceil(TimerManager.getTimeRemaining(tabId)),
+        };
 
-    case 'startAutoReload':
-      TimerManager.start(tabId, request.interval);
-      BadgeManager.update(tabId, true);
-      sendResponse({ success: true });
-      break;
+      case 'startAutoReload':
+        await TimerManager.start(tabId, request.interval);
+        BadgeManager.update(tabId, true);
+        await ServiceWorkerManager.manageKeepAlive();
+        return { success: true };
 
-    case 'stopAutoReload':
-      TimerManager.stop(tabId);
-      BadgeManager.update(tabId, false);
-      sendResponse({ success: true });
-      break;
+      case 'stopAutoReload':
+        await TimerManager.stop(tabId);
+        BadgeManager.update(tabId, false);
+        await ServiceWorkerManager.manageKeepAlive();
+        return { success: true };
 
-    case 'stopAllTimers':
-      TimerManager.stopAll();
-      sendResponse({ success: true });
-      break;
-  }
+      case 'stopAllTimers':
+        await TimerManager.stopAll();
+        await ServiceWorkerManager.manageKeepAlive();
+        return { success: true };
+    }
+  };
+
+  // Execute async handler and send response
+  handleAsync().then(sendResponse).catch(error => {
+    console.error('Error handling message:', error);
+    sendResponse({ error: error.message });
+  });
+
+  // Return true to indicate we will send a response asynchronously
+  return true;
 });
