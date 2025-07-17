@@ -155,7 +155,7 @@ The Auto Reload Tabs extension automatically reloads browser tabs at customizabl
 
 ## Recent Major Updates
 
-### UI/UX Redesign (v2.0)
+### UI/UX Redesign
 - **Integrated countdown display**: Combined countdown and control interface with glass-morphism design
 - **Dropdown menu system**: Added three-dot menu with "Stop All Timers" functionality
 - **Enhanced button design**: Updated labels with icons (▶ Start Timer, ⏹ Stop Timer)
@@ -168,7 +168,7 @@ The Auto Reload Tabs extension automatically reloads browser tabs at customizabl
 - **Updated tab marker**: Changed from reload icon (🔄) to lightning bolt (⚡) for consistency
 - **Enhanced visual hierarchy**: Better contrast and readability across all interface elements
 
-### Timer Persistence and Reliability Enhancements (v3.0)
+### Timer Persistence and Reliability Enhancements
 - **Context menu fix**: Fixed context menu showing wrong state when switching between tabs
 - **Timer persistence**: Implemented comprehensive timer state persistence across browser sessions
 - **Service worker keep-alive**: Added automatic keep-alive mechanism to prevent timer interruption
