@@ -6,7 +6,8 @@
   "permissions": [
     "tabs",
     "contextMenus", 
-    "storage"
+    "storage",
+    "scripting"
   ],
   "background": {
     "service_worker": "src/scripts/background.js",

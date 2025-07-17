@@ -65,9 +65,32 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _tab) => {
   }
 });
 
+// Monitor tab discarding and recovery
+async function monitorTabDiscarding() {
+  const activeTimers = await chrome.storage.local.get('activeTimers');
+  const timerList = activeTimers.activeTimers || [];
+  
+  for (const tabId of timerList) {
+    try {
+      const tab = await chrome.tabs.get(tabId);
+      
+      if (tab.discarded && TimerManager.isActive(tabId)) {
+        // Tab was discarded, reload it to restore functionality
+        console.log(`Reloading discarded tab ${tabId} to restore auto-reload functionality`);
+        await chrome.tabs.reload(tabId);
+      }
+    } catch (error) {
+      // Tab no longer exists, clean up will be handled by timer manager
+    }
+  }
+}
+
+// Start monitoring for tab discarding every 2 minutes
+setInterval(monitorTabDiscarding, 120000);
+
 // Handle messages from popup and content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  const tabId = request.tabId;
+  const tabId = request.tabId || (sender.tab ? sender.tab.id : null);
   
   // Handle async operations
   const handleAsync = async () => {
@@ -104,6 +127,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         await TimerManager.stopAll();
         await ServiceWorkerManager.manageKeepAlive();
         return { success: true };
+        
+      case 'tabKeepAlive':
+        // Handle keep-alive message from content script
+        // This helps maintain extension-content script connection
+        return { received: true };
     }
   };
 

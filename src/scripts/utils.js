@@ -12,24 +12,41 @@ export const TimerManager = {
 
     this.startTimes.set(tabId, Date.now());
 
-    const timer = setInterval(() => {
-      chrome.tabs
-        .get(tabId)
-        .then(() => {
-          chrome.tabs.reload(tabId);
-          this.startTimes.set(tabId, Date.now());
-          // Update storage with new start time
-          chrome.storage.local.set({
-            [`tab_${tabId}`]: {
-              active: true,
-              interval,
-              startTime: this.startTimes.get(tabId),
-            },
-          });
-        })
-        .catch(() => {
-          this.stop(tabId);
+    const timer = setInterval(async () => {
+      try {
+        // Check if tab exists and is not discarded
+        const tab = await chrome.tabs.get(tabId);
+        
+        if (tab.discarded) {
+          console.log(`Tab ${tabId} is discarded, reloading to restore functionality`);
+        }
+        
+        // Reload the tab
+        await chrome.tabs.reload(tabId);
+        this.startTimes.set(tabId, Date.now());
+        
+        // Update storage with new start time
+        await chrome.storage.local.set({
+          [`tab_${tabId}`]: {
+            active: true,
+            interval,
+            startTime: this.startTimes.get(tabId),
+            lastReload: Date.now(),
+          },
         });
+        
+        // Send message to content script to ensure it's active
+        chrome.tabs.sendMessage(tabId, {
+          action: 'timerHeartbeat',
+          timestamp: Date.now()
+        }).catch(() => {
+          // Content script might not be ready, ignore error
+        });
+        
+      } catch (error) {
+        console.log(`Tab ${tabId} no longer exists, stopping timer`);
+        await this.stop(tabId);
+      }
     }, interval);
 
     this.timers.set(tabId, timer);
@@ -41,6 +58,7 @@ export const TimerManager = {
         active: true,
         interval,
         startTime: this.startTimes.get(tabId),
+        lastReload: Date.now(),
       },
     });
 
@@ -220,6 +238,7 @@ export const ContextMenuManager = {
 
 export const ServiceWorkerManager = {
   keepAliveInterval: null,
+  tabKeepAliveInterval: null,
   
   startKeepAlive() {
     // Send keep-alive message every 20 seconds
@@ -233,10 +252,50 @@ export const ServiceWorkerManager = {
     }, 20000);
   },
   
+  startTabKeepAlive() {
+    // Prevent tab suspension by periodically interacting with active timer tabs
+    this.tabKeepAliveInterval = setInterval(async () => {
+      const activeTimers = await chrome.storage.local.get('activeTimers');
+      const timerList = activeTimers.activeTimers || [];
+      
+      for (const tabId of timerList) {
+        try {
+          // Check if tab exists and is not discarded
+          const tab = await chrome.tabs.get(tabId);
+          
+          // Inject a minimal script to keep tab active
+          if (tab && !tab.discarded) {
+            chrome.scripting.executeScript({
+              target: { tabId: tabId },
+              func: () => {
+                // Minimal interaction to prevent suspension
+                if (document.hidden) {
+                  // Tab is hidden, send keep-alive signal
+                  window.postMessage({ type: 'auto-reload-keep-alive' }, '*');
+                }
+              }
+            }).catch(() => {
+              // Ignore errors if script injection fails
+            });
+          }
+        } catch (error) {
+          // Tab no longer exists, will be cleaned up by timer manager
+        }
+      }
+    }, 30000); // Every 30 seconds
+  },
+  
   stopKeepAlive() {
     if (this.keepAliveInterval) {
       clearInterval(this.keepAliveInterval);
       this.keepAliveInterval = null;
+    }
+  },
+  
+  stopTabKeepAlive() {
+    if (this.tabKeepAliveInterval) {
+      clearInterval(this.tabKeepAliveInterval);
+      this.tabKeepAliveInterval = null;
     }
   },
   
@@ -250,10 +309,20 @@ export const ServiceWorkerManager = {
   async manageKeepAlive() {
     const shouldKeep = await this.shouldKeepAlive();
     
-    if (shouldKeep && !this.keepAliveInterval) {
-      this.startKeepAlive();
-    } else if (!shouldKeep && this.keepAliveInterval) {
-      this.stopKeepAlive();
+    if (shouldKeep) {
+      if (!this.keepAliveInterval) {
+        this.startKeepAlive();
+      }
+      if (!this.tabKeepAliveInterval) {
+        this.startTabKeepAlive();
+      }
+    } else {
+      if (this.keepAliveInterval) {
+        this.stopKeepAlive();
+      }
+      if (this.tabKeepAliveInterval) {
+        this.stopTabKeepAlive();
+      }
     }
   }
 };
