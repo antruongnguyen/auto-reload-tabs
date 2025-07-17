@@ -133,19 +133,3 @@ dist/                      # Built extension (generated)
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Glass-morphism design inspiration from modern web design trends
-- Chrome Extension APIs and documentation
-- Vite and modern build tool ecosystem
-
-## 📞 Support
-
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/antruongnguyen/auto-reload-tabs/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/antruongnguyen/auto-reload-tabs/discussions)
-- 📧 **Contact**: Create an issue for general questions
-
----
-
-**Made with ❤️ by the Auto Reload Extension Team**
