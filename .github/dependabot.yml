@@ -16,15 +16,6 @@ updates:
     groups:
       development-dependencies:
         dependency-type: "development"
-        patterns:
-          - "@crxjs/*"
-          - "@types/*"
-          - "eslint*"
-          - "prettier"
-          - "rimraf"
-          - "typescript"
-          - "vite*"
-          - "web-ext"
       production-dependencies:
         dependency-type: "production"
 
