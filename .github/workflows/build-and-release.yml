@@ -38,7 +38,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
           name: ${{ github.ref_name }}
-          artifacts: "web-ext-artifacts/*.zip,dist/**/*"
+          artifacts: "web-ext-artifacts/*.zip"
           allowUpdates: true
           omitBodyDuringUpdate: true
           skipIfReleaseExists: false
