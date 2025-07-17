@@ -69,14 +69,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _tab) => {
 async function monitorTabDiscarding() {
   const activeTimers = await chrome.storage.local.get('activeTimers');
   const timerList = activeTimers.activeTimers || [];
-  
+
   for (const tabId of timerList) {
     try {
       const tab = await chrome.tabs.get(tabId);
-      
+
       if (tab.discarded && TimerManager.isActive(tabId)) {
         // Tab was discarded, reload it to restore functionality
-        console.log(`Reloading discarded tab ${tabId} to restore auto-reload functionality`);
+        console.debug(`Reloading discarded tab ${tabId} to restore auto-reload functionality`);
         await chrome.tabs.reload(tabId);
       }
     } catch (error) {
@@ -91,7 +91,7 @@ setInterval(monitorTabDiscarding, 120000);
 // Handle messages from popup and content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   const tabId = request.tabId || (sender.tab ? sender.tab.id : null);
-  
+
   // Handle async operations
   const handleAsync = async () => {
     switch (request.action) {
@@ -127,7 +127,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         await TimerManager.stopAll();
         await ServiceWorkerManager.manageKeepAlive();
         return { success: true };
-        
+
       case 'tabKeepAlive':
         // Handle keep-alive message from content script
         // This helps maintain extension-content script connection

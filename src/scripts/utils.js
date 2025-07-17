@@ -16,15 +16,15 @@ export const TimerManager = {
       try {
         // Check if tab exists and is not discarded
         const tab = await chrome.tabs.get(tabId);
-        
+
         if (tab.discarded) {
-          console.log(`Tab ${tabId} is discarded, reloading to restore functionality`);
+          console.debug(`Tab ${tabId} is discarded, reloading to restore functionality`);
         }
-        
+
         // Reload the tab
         await chrome.tabs.reload(tabId);
         this.startTimes.set(tabId, Date.now());
-        
+
         // Update storage with new start time
         await chrome.storage.local.set({
           [`tab_${tabId}`]: {
@@ -34,7 +34,7 @@ export const TimerManager = {
             lastReload: Date.now(),
           },
         });
-        
+
         // Send message to content script to ensure it's active
         chrome.tabs.sendMessage(tabId, {
           action: 'timerHeartbeat',
@@ -42,9 +42,9 @@ export const TimerManager = {
         }).catch(() => {
           // Content script might not be ready, ignore error
         });
-        
+
       } catch (error) {
-        console.log(`Tab ${tabId} no longer exists, stopping timer`);
+        console.debug(`Tab ${tabId} no longer exists, stopping timer`);
         await this.stop(tabId);
       }
     }, interval);
@@ -121,20 +121,20 @@ export const TimerManager = {
     try {
       const activeTimers = await chrome.storage.local.get('activeTimers');
       const timerList = activeTimers.activeTimers || [];
-      
+
       for (const tabId of timerList) {
         const result = await chrome.storage.local.get(`tab_${tabId}`);
         const tabData = result[`tab_${tabId}`];
-        
+
         if (tabData && tabData.active) {
           try {
             // Check if tab still exists
             await chrome.tabs.get(tabId);
-            
+
             // Calculate how much time should have passed
             const elapsed = Date.now() - tabData.startTime;
             const shouldHaveReloaded = Math.floor(elapsed / tabData.interval);
-            
+
             // If we missed reloads, do one now and reset timer
             if (shouldHaveReloaded > 0) {
               await chrome.tabs.reload(tabId);
@@ -217,7 +217,7 @@ export const ContextMenuManager = {
     });
   },
 
-  update(tabId) {
+  update(_tabId) {
     // Get current active tab to update context menu for that specific tab
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs.length > 0) {
@@ -239,34 +239,34 @@ export const ContextMenuManager = {
 export const ServiceWorkerManager = {
   keepAliveInterval: null,
   tabKeepAliveInterval: null,
-  
+
   startKeepAlive() {
     // Send keep-alive message every 20 seconds
     this.keepAliveInterval = setInterval(() => {
       chrome.runtime.getPlatformInfo(() => {
         // This API call keeps the service worker alive
         if (chrome.runtime.lastError) {
-          console.log('Keep-alive ping failed:', chrome.runtime.lastError);
+          console.debug('Keep-alive ping failed:', chrome.runtime.lastError);
         }
       });
     }, 20000);
   },
-  
+
   startTabKeepAlive() {
     // Prevent tab suspension by periodically interacting with active timer tabs
     this.tabKeepAliveInterval = setInterval(async () => {
       const activeTimers = await chrome.storage.local.get('activeTimers');
       const timerList = activeTimers.activeTimers || [];
-      
+
       for (const tabId of timerList) {
         try {
           // Check if tab exists and is not discarded
           const tab = await chrome.tabs.get(tabId);
-          
+
           // Inject a minimal script to keep tab active
           if (tab && !tab.discarded) {
             chrome.scripting.executeScript({
-              target: { tabId: tabId },
+              target: { tabId },
               func: () => {
                 // Minimal interaction to prevent suspension
                 if (document.hidden) {
@@ -284,31 +284,31 @@ export const ServiceWorkerManager = {
       }
     }, 30000); // Every 30 seconds
   },
-  
+
   stopKeepAlive() {
     if (this.keepAliveInterval) {
       clearInterval(this.keepAliveInterval);
       this.keepAliveInterval = null;
     }
   },
-  
+
   stopTabKeepAlive() {
     if (this.tabKeepAliveInterval) {
       clearInterval(this.tabKeepAliveInterval);
       this.tabKeepAliveInterval = null;
     }
   },
-  
+
   // Check if we have any active timers to determine if keep-alive is needed
   async shouldKeepAlive() {
     const activeTimers = await chrome.storage.local.get('activeTimers');
     const timerList = activeTimers.activeTimers || [];
     return timerList.length > 0;
   },
-  
+
   async manageKeepAlive() {
     const shouldKeep = await this.shouldKeepAlive();
-    
+
     if (shouldKeep) {
       if (!this.keepAliveInterval) {
         this.startKeepAlive();
