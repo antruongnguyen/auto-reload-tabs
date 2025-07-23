@@ -1,6 +1,6 @@
 # Auto Reload Tabs Chrome Extension
 
-A modern Chrome extension that automatically reloads browser tabs with customizable intervals, featuring a beautiful glass-morphism UI and advanced timer management.
+A modern Chromium extension that automatically reloads browser tabs with customizable intervals, featuring a beautiful glass-morphism UI and advanced timer management.
 
 ## ✨ Features
 
@@ -15,8 +15,8 @@ A modern Chrome extension that automatically reloads browser tabs with customiza
 
 ## 🚀 Installation
 
-### From Chrome Web Store
-*Coming soon - will be published to Chrome Web Store*
+### From Web Store
+- [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/auto-reload-tabs/hngfppakiiiaahakaabkiapdggleidno)
 
 ### Development Installation
 1. Clone this repository
@@ -66,7 +66,7 @@ dist/                      # Built extension (generated)
 
 ### Build Tools
 - **Vite**: Fast build tool with HMR support
-- **@crxjs/vite-plugin**: Chrome extension development plugin
+- **@crxjs/vite-plugin**: Chromium extension development plugin
 - **ESLint**: Code linting
 - **Prettier**: Code formatting
 
